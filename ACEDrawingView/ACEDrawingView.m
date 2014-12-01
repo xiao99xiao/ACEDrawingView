@@ -508,7 +508,6 @@
     [self resetTool];
     [self.bufferArray removeAllObjects];
     [self.pathArray removeAllObjects];
-    self.prev_image = nil;
     [self updateCacheImage:YES];
     [self setNeedsDisplay];
 }
