@@ -99,44 +99,48 @@
     // TODO: draw only the updated part of the image
     [self drawPath];
 #else
-    [self.image drawInRect:self.bounds];
-    [self.currentTool draw];
+  CGRect imageRect = [self aspectFitImage:self.image];
+  [self.image drawInRect:imageRect];
+  [self.currentTool draw];
 #endif
 }
 
 - (void)updateCacheImage:(BOOL)redraw
 {
-    // init a context
-    UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 0.0);
+  // init a context
+  UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 0.0);
+  
+  if (redraw) {
+    // erase the previous image
+    self.image = nil;
     
-    if (redraw) {
-        // erase the previous image
-        self.image = nil;
-        
-        // load previous image (if returning to screen)
-        [[self.prev_image copy] drawInRect:self.bounds];
-        
-        // I need to redraw all the lines
-        for (id<ACEDrawingTool> tool in self.pathArray) {
-            [tool draw];
-        }
-        
-    } else {
-        // set the draw point
-        [self.image drawAtPoint:CGPointZero];
-        [self.currentTool draw];
+    CGRect imageRect = [self aspectFitImage:self.prev_image];
+    
+    // load previous image (if returning to screen)
+    [[self.prev_image copy] drawInRect:imageRect];
+    
+    // I need to redraw all the lines
+    for (id<ACEDrawingTool> tool in self.pathArray) {
+      [tool draw];
     }
     
-    // store the image
-    self.image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
+  } else {
+    // set the draw point
+    CGRect imageRect = [self aspectFitImage:self.image];
+    [self.image drawInRect:imageRect];
+    [self.currentTool draw];
+  }
+  
+  // store the image
+  self.image = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
 }
 
 - (void)finishDrawing
 {
     // update the image
     [self updateCacheImage:NO];
-    
+  
     // clear the redo queue
     [self.bufferArray removeAllObjects];
     
@@ -572,5 +576,17 @@
 #endif
 }
 
+- (CGRect)aspectFitImage:(UIImage *)image
+{
+  CGSize size = self.bounds.size;
+  CGFloat scale = MIN(image.size.width/size.width, image.size.height/size.height);
+  CGFloat width = image.size.width * scale;
+  CGFloat height = image.size.height * scale;
+  
+  CGFloat offsetX = (size.width - width)/2.0f;
+  CGFloat offsetY = (size.height - height)/2.0f;
+  CGRect imageRect = CGRectMake(offsetX, offsetY, width, height);
+  return imageRect;
+}
 
 @end
