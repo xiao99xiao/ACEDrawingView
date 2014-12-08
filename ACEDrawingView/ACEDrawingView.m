@@ -99,8 +99,7 @@
     // TODO: draw only the updated part of the image
     [self drawPath];
 #else
-  CGRect imageRect = [self aspectFitImage:self.image];
-  [self.image drawInRect:imageRect];
+  [self.image drawInRect:self.bounds];
   [self.currentTool draw];
 #endif
 }
@@ -114,10 +113,8 @@
     // erase the previous image
     self.image = nil;
     
-    CGRect imageRect = [self aspectFitImage:self.prev_image];
-    
     // load previous image (if returning to screen)
-    [[self.prev_image copy] drawInRect:imageRect];
+    [[self.prev_image copy] drawInRect:self.bounds];
     
     // I need to redraw all the lines
     for (id<ACEDrawingTool> tool in self.pathArray) {
@@ -126,8 +123,7 @@
     
   } else {
     // set the draw point
-    CGRect imageRect = [self aspectFitImage:self.image];
-    [self.image drawInRect:imageRect];
+    [self.image drawAtPoint:CGPointZero];
     [self.currentTool draw];
   }
   
@@ -471,6 +467,9 @@
 - (void)loadImage:(UIImage *)image
 {
     self.image = image;
+  
+    self.frame = [self rectForAspectFitSize:image.size inRect:self.superview.bounds];
+    self.center = CGPointMake(CGRectGetMidX(self.superview.bounds), CGRectGetMidY(self.superview.bounds));
     
     //save the loaded image to persist after an undo step
     self.prev_image = [image copy];
@@ -480,6 +479,17 @@
     [self.pathArray removeAllObjects];
     [self updateCacheImage:YES];
     [self setNeedsDisplay];
+}
+
+- (CGRect)rectForAspectFitSize:(CGSize)size inRect:(CGRect)rect
+{
+    CGFloat scale = MIN(rect.size.width/size.width, rect.size.height/size.height);
+    CGFloat width = size.width * scale;
+    CGFloat height = size.height * scale;
+    
+    CGFloat offsetX = (rect.size.width - width)/2.0f;
+    CGFloat offsetY = (rect.size.height - height)/2.0f;
+    return CGRectMake(offsetX, offsetY, width, height);
 }
 
 - (void)loadImageData:(NSData *)imageData
@@ -574,19 +584,6 @@
     
     [super dealloc];
 #endif
-}
-
-- (CGRect)aspectFitImage:(UIImage *)image
-{
-  CGSize size = self.bounds.size;
-  CGFloat scale = MIN(image.size.width/size.width, image.size.height/size.height);
-  CGFloat width = image.size.width * scale;
-  CGFloat height = image.size.height * scale;
-  
-  CGFloat offsetX = (size.width - width)/2.0f;
-  CGFloat offsetY = (size.height - height)/2.0f;
-  CGRect imageRect = CGRectMake(offsetX, offsetY, width, height);
-  return imageRect;
 }
 
 @end
