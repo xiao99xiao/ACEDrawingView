@@ -431,7 +431,7 @@
 
     CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
 
-    CGFloat offset = (self.frame.size.height - keyboardSize.width) - textViewBottomY;
+    CGFloat offset = (self.frame.size.height - keyboardSize.height) - textViewBottomY;
 
     if (offset < 0) {
         CGFloat newYPos = self.frame.origin.y + offset;
