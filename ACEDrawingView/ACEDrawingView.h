@@ -69,6 +69,10 @@ typedef enum {
 - (BOOL)canRedo;
 - (void)redoLatestStep;
 
+// commits and saves the text entry
+// exposed to fix issue if the user navigates away without resigning the keyboard first.
+- (void)commitAndHideTextEntry;
+
 @end
 
 #pragma mark -
