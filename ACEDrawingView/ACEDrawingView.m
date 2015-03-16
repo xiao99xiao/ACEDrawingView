@@ -468,7 +468,7 @@
 {
     self.image = image;
   
-    self.frame = [self rectForAspectFitSize:image.size inRect:self.superview.bounds];
+    self.frame = [self rectForAspectFitSize:image.size inRect:self.superview?self.superview.bounds:self.bounds];
     self.center = CGPointMake(CGRectGetMidX(self.superview.bounds), CGRectGetMidY(self.superview.bounds));
     
     //save the loaded image to persist after an undo step
