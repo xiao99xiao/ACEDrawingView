@@ -173,6 +173,79 @@ CGPoint midPoint(CGPoint p1, CGPoint p2)
 
 @end
 
+
+#pragma mark - ACEDrawingArrowTool
+
+@interface ACEDrawingArrowTool ()
+@property (nonatomic, assign) CGPoint firstPoint;
+@property (nonatomic, assign) CGPoint lastPoint;
+@end
+
+#pragma mark -
+
+@implementation ACEDrawingArrowTool
+
+@synthesize lineColor = _lineColor;
+@synthesize lineAlpha = _lineAlpha;
+@synthesize lineWidth = _lineWidth;
+
+- (void)setInitialPoint:(CGPoint)firstPoint
+{
+    self.firstPoint = firstPoint;
+}
+
+- (void)moveFromPoint:(CGPoint)startPoint toPoint:(CGPoint)endPoint
+{
+    self.lastPoint = endPoint;
+}
+
+- (void)draw
+{
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    double slopy, cosy, siny;
+    // Arrow size
+    double length = 10.0;
+    double width = 5.0;
+    
+    slopy = atan2((self.firstPoint.y - self.lastPoint.y), (self.firstPoint.x - self.lastPoint.x));
+    cosy = cos(slopy);
+    siny = sin(slopy);
+    
+    // set the line properties
+    CGContextSetStrokeColorWithColor(context, self.lineColor.CGColor);
+    CGContextSetLineCap(context, kCGLineCapRound);
+    CGContextSetLineWidth(context, self.lineWidth);
+    CGContextSetAlpha(context, self.lineAlpha);
+    
+    // draw the line
+    CGContextMoveToPoint(context, self.firstPoint.x, self.firstPoint.y);
+    CGContextAddLineToPoint(context, self.lastPoint.x, self.lastPoint.y);
+    CGContextStrokePath(context);
+    
+    //here is the tough part - actually drawing the arrows
+    //a total of 6 lines drawn to make the arrow shape
+    CGContextMoveToPoint(context, self.lastPoint.x, self.lastPoint.y);
+    CGContextAddLineToPoint(context,
+                            self.lastPoint.x +  (length * cosy - ( width / 2.0 * siny )),
+                            self.lastPoint.y +  (length * siny + ( width / 2.0 * cosy )) );
+    CGContextAddLineToPoint(context,
+                            self.lastPoint.x +  (length * cosy + width / 2.0 * siny),
+                            self.lastPoint.y -  (width / 2.0 * cosy - length * siny) );
+    CGContextClosePath(context);
+    CGContextStrokePath(context);
+}
+
+- (void)dealloc
+{
+    self.lineColor = nil;
+#if !ACE_HAS_ARC
+    [super dealloc];
+#endif
+}
+
+@end
+
 #pragma mark - ACEDrawingTextTool
 
 @interface ACEDrawingTextTool ()
